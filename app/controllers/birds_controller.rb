@@ -22,10 +22,35 @@ class BirdsController < ApplicationController
     end
   end
 
+  #PATCH /birds/:id
+  def update
+   bird = find_a_bird
+   bird.update(bird_params)
+   render json: bird, status: :accepted
+  rescue ActiveRecord::RecordNotFound  #Will rescue us from the bird not found error
+    send_error
+  end
+  
+  #Custom route that takes the role of updating the likes from the frontend client to the backend
+  def increment_likes
+    bird = find_a_bird
+    bird.update(likes:bird.likes + 1)
+    render json: bird
+  rescue ActiveRecord::RecordNotFound
+    send_error
+  end
+
   private
 
   def bird_params
-    params.permit(:name, :species)
+    params.permit(:name, :species,:likes)
   end
 
+  def send_error
+    render json: {error:" Bird not found!"}, status: :not_found
+  end
+
+  def find_a_bird
+    bird = Bird.find(params[:id])
+  end
 end
